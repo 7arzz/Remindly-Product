@@ -8,7 +8,7 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       devOptions: {
-        enabled: true, // biar bisa test di dev mode
+        enabled: true,
       },
       manifest: {
         name: "Remindly",
@@ -20,14 +20,14 @@ export default defineConfig({
         start_url: "/",
         icons: [
           {
-            src: "/icon-192.png",
+            src: "/bell.jpg",
             sizes: "192x192",
-            type: "image/png",
+            type: "image/jpeg",
           },
           {
-            src: "/icon-512.png",
+            src: "/bell.jpg",
             sizes: "512x512",
-            type: "image/png",
+            type: "image/jpeg",
           },
         ],
       },

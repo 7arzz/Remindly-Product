@@ -86,14 +86,50 @@ function App() {
     osc.stop(ctx.currentTime + 0.5);
   }, [soundType]);
 
-  // Request notification permission
-  useEffect(() => {
-    if ("Notification" in window) {
-      Notification.requestPermission();
+  /**
+   * 🔔 BACKGROUND NOTIFICATION SCHEDULER (Experimental)
+   * This uses "Notification Trigger API" to show notifications even when closed!
+   * Requires: Chrome/Edge with #enable-experimental-web-platform-features
+   */
+  const scheduleNotification = useCallback(async (title, body, timestamp) => {
+    if (!("serviceWorker" in navigator) || !("Notification" in window)) return;
+
+    const registration = await navigator.serviceWorker.ready;
+
+    // Check if browser supports Triggers
+    if ("showTrigger" in Notification.prototype) {
+      registration.showNotification(title, {
+        body: body,
+        icon: "/bell.jpg",
+        tag: `remindly-${timestamp}`, // Unique tag for each reminder
+        showTrigger: new globalThis.TimestampTrigger(timestamp),
+      });
+      console.log(`Scheduled for: ${new Date(timestamp).toLocaleTimeString()}`);
+    } else {
+      console.warn("Notification Triggers not supported in this browser.");
     }
   }, []);
 
-  // Check reminders and deadlines
+  // Request notification permission and show instruction for experimental features
+  useEffect(() => {
+    const initNotifications = async () => {
+      if ("Notification" in window) {
+        const permission = await Notification.requestPermission();
+        if (
+          permission === "granted" &&
+          !("showTrigger" in Notification.prototype)
+        ) {
+          console.log(
+            "%cTip: Buka chrome://flags dan aktifkan 'Experimental Web Platform features' agar notifikasi jalan 100% saat aplikasi tutup!",
+            "color: #a855f7; font-weight: bold;",
+          );
+        }
+      }
+    };
+    initNotifications();
+  }, []);
+
+  // Check reminders and deadlines (Foreground Fallback)
   useEffect(() => {
     const interval = setInterval(() => {
       const now = new Date().getTime();
@@ -104,7 +140,7 @@ function App() {
         const reminderTime = taskTime - (task.reminderMinutes || 0) * 60 * 1000;
         let newTask = { ...task };
 
-        // 1. Check for early reminder
+        // 1. Foreground Check for early reminder
         if (
           !task.done &&
           !task.reminderSent &&
@@ -115,7 +151,7 @@ function App() {
           if (Notification.permission === "granted") {
             new Notification("🔔 Reminder: Remindly", {
               body: `Upcoming: ${task.text} (in ${task.reminderMinutes} mins)`,
-              icon: "/vite.svg",
+              icon: "/bell.jpg",
             });
           }
 
@@ -124,12 +160,12 @@ function App() {
           hasChanges = true;
         }
 
-        // 2. Check for deadline
+        // 2. Foreground Check for deadline
         if (!task.done && !task.notified && now >= taskTime) {
           if (Notification.permission === "granted") {
             new Notification("⏰ Remindly: Deadline Reach!", {
               body: task.text,
-              icon: "/vite.svg",
+              icon: "/bell.jpg",
             });
             newTask.notified = true;
           }
@@ -164,26 +200,43 @@ function App() {
   }, [tasks, playSound]);
 
   // Add task
-  const addTask = useCallback((text, time, priority, reminderMinutes) => {
-    const newTask = {
-      id: Date.now(),
-      text,
-      time,
-      priority: priority || "medium",
-      reminderMinutes: reminderMinutes || 0,
-      reminderSent: false,
-      done: false,
-      createdAt: new Date().toISOString(),
-    };
-    setTasks((prev) => [...prev, newTask]);
+  const addTask = useCallback(
+    (text, time, priority, reminderMinutes) => {
+      const timestamp = new Date(time).getTime();
+      const earlyReminderMinutes = reminderMinutes || 0;
+      const reminderTimestamp = timestamp - earlyReminderMinutes * 60 * 1000;
 
-    confetti({
-      particleCount: 50,
-      spread: 60,
-      origin: { y: 0.8 },
-      colors: ["#a855f7", "#7c3aed", "#ffffff"],
-    });
-  }, []);
+      const newTask = {
+        id: Date.now(),
+        text,
+        time,
+        priority: priority || "medium",
+        reminderMinutes: earlyReminderMinutes,
+        reminderSent: false,
+        done: false,
+        createdAt: new Date().toISOString(),
+      };
+      setTasks((prev) => [...prev, newTask]);
+
+      // Schedule background notifications
+      scheduleNotification("⏰ Deadline Reach!", text, timestamp);
+      if (earlyReminderMinutes > 0) {
+        scheduleNotification(
+          "🔔 Upcoming Reminder",
+          `${text} (${earlyReminderMinutes} mins left)`,
+          reminderTimestamp,
+        );
+      }
+
+      confetti({
+        particleCount: 50,
+        spread: 60,
+        origin: { y: 0.8 },
+        colors: ["#a855f7", "#7c3aed", "#ffffff"],
+      });
+    },
+    [scheduleNotification],
+  );
 
   // Delete task
   const deleteTask = useCallback((id) => {
@@ -228,7 +281,7 @@ function App() {
     if (Notification.permission === "granted") {
       new Notification("🔔 Test Notification", {
         body: "This is a test reminder from Remindly!",
-        icon: "/vite.svg",
+        icon: "/bell.jpg",
       });
     }
     playSound();
@@ -258,7 +311,7 @@ function App() {
           </button>
           <div className="sound-selector">
             <Settings size={18} style={{ opacity: 0.6 }} />
-            <select
+            {/* <select
               value={soundType}
               onChange={(e) => setSoundType(e.target.value)}
               className="mini-select"
@@ -271,7 +324,7 @@ function App() {
               <option value="ping">Ping</option>
               <option value="digital">Digital</option>
               <option value="alert">Alert</option>
-            </select>
+            </select> */}
           </div>
         </div>
       </header>
