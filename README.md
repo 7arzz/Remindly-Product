@@ -1,6 +1,6 @@
-# 📝 Remindly – Smart PWA Task Manager & Reminder
+# 📝 Remindly – Simple & Elegant PWA Task Manager
 
-Tingkatkan produktivitas tanpa ribet dengan **Remindly**, aplikasi manajemen tugas berbasis web yang ringan, efisien, dan dilengkapi dengan notifikasi real-time serta fitur PWA.
+Tingkatkan produktivitas tanpa ribet dengan **Remindly**, aplikasi manajemen tugas berbasis web yang ringan, efisien, dan dapat diinstal di perangkat Anda (PWA).
 
 Cocok untuk pelajar, pekerja, atau siapa pun yang ingin mengatur waktu dengan lebih rapi.
 
@@ -12,23 +12,19 @@ Cocok untuk pelajar, pekerja, atau siapa pun yang ingin mengatur waktu dengan le
 - 🎯 Fokus ke produktivitas harian
 - 💻 Bisa langsung dipakai & dikembangkan
 - 📱 **PWA Ready** (Bisa diinstall di HP/Desktop & bisa offline)
-- 🔔 **Smart Notifications** (Notifikasi browser & sound alert)
 - 🎨 UI modern dan clean (siap dikembangkan lebih lanjut)
 
 ---
 
 ## 🚀 Fitur Unggulan
 
-- ✅ Task & Reminder Management
-- ⏰ Deadline + Early Reminder (pengingat sebelum waktu)
-- 🔔 Notifikasi Browser Real-Time
-- 🔊 Sound Alert (3 pilihan suara: Ping, Digital, Alert)
-- 📱 **Progressive Web App (PWA)** - Bisa diinstall & akses offline
+- ✅ Task Management
+- ⏰ Deadline Tracking
 - 📊 Statistik & Riwayat Task
+- 📱 **Progressive Web App (PWA)** - Bisa diinstall & akses offline
 - 🎉 Animasi Confetti saat task selesai
 - 🔍 Filter, Search, dan Sorting
 - 💾 Auto Save (LocalStorage)
-- 🧪 Test Notification Button
 
 ---
 
@@ -46,7 +42,6 @@ Cocok untuk pelajar, pekerja, atau siapa pun yang ingin mengatur waktu dengan le
 - React (Hooks)
 - JavaScript (ES6+)
 - CSS (Custom UI)
-- **Web Audio API**
 - **Vite PWA Plugin**
 - LocalStorage
 

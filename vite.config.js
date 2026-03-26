@@ -22,12 +22,12 @@ export default defineConfig({
           {
             src: "/bell.jpg",
             sizes: "192x192",
-            type: "image/jpeg",
+            type: "image/jpg",
           },
           {
             src: "/bell.jpg",
             sizes: "512x512",
-            type: "image/jpeg",
+            type: "image/jpg",
           },
         ],
       },

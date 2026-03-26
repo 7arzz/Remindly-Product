@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { Bell, BarChart3, Settings, Zap, Trash2 } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { BarChart3, Trash2, ListTodo } from "lucide-react";
 import confetti from "canvas-confetti";
 import FilterControls from "./components/FilterControls";
 import ProgressBar from "./components/ProgressBar";
@@ -20,9 +20,6 @@ function App() {
     () => localStorage.getItem("remindly_sortBy") || "time",
   );
   const [searchQuery, setSearchQuery] = useState("");
-  const [soundType, setSoundType] = useState(
-    () => localStorage.getItem("remindly_soundType") || "ping",
-  );
   const [history, setHistory] = useState(() => {
     const saved = localStorage.getItem("remindly_history");
     return saved ? JSON.parse(saved) : [];
@@ -45,198 +42,25 @@ function App() {
     localStorage.setItem("remindly_sortBy", sortBy);
   }, [sortBy]);
 
-  useEffect(() => {
-    localStorage.setItem("remindly_soundType", soundType);
-  }, [soundType]);
-
-  const audioContext = useRef(null);
-
-  const playSound = useCallback(() => {
-    if (!audioContext.current) {
-      audioContext.current = new (
-        window.AudioContext || window.webkitAudioContext
-      )();
-    }
-    const ctx = audioContext.current;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.type = "sine";
-    if (soundType === "ping") {
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(880, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.5);
-    } else if (soundType === "digital") {
-      osc.type = "square";
-      osc.frequency.setValueAtTime(1200, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.2);
-    } else {
-      osc.type = "triangle";
-      osc.frequency.setValueAtTime(440, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.8);
-    }
-
-    gain.gain.setValueAtTime(0.1, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start();
-    osc.stop(ctx.currentTime + 0.5);
-  }, [soundType]);
-
-  /**
-   * 🔔 BACKGROUND NOTIFICATION SCHEDULER (Experimental)
-   * This uses "Notification Trigger API" to show notifications even when closed!
-   * Requires: Chrome/Edge with #enable-experimental-web-platform-features
-   */
-  const scheduleNotification = useCallback(async (title, body, timestamp) => {
-    if (!("serviceWorker" in navigator) || !("Notification" in window)) return;
-
-    const registration = await navigator.serviceWorker.ready;
-
-    // Check if browser supports Triggers
-    if ("showTrigger" in Notification.prototype) {
-      registration.showNotification(title, {
-        body: body,
-        icon: "/bell.jpg",
-        tag: `remindly-${timestamp}`, // Unique tag for each reminder
-        showTrigger: new globalThis.TimestampTrigger(timestamp),
-      });
-      console.log(`Scheduled for: ${new Date(timestamp).toLocaleTimeString()}`);
-    } else {
-      console.warn("Notification Triggers not supported in this browser.");
-    }
-  }, []);
-
-  // Request notification permission and show instruction for experimental features
-  useEffect(() => {
-    const initNotifications = async () => {
-      if ("Notification" in window) {
-        const permission = await Notification.requestPermission();
-        if (
-          permission === "granted" &&
-          !("showTrigger" in Notification.prototype)
-        ) {
-          console.log(
-            "%cTip: Buka chrome://flags dan aktifkan 'Experimental Web Platform features' agar notifikasi jalan 100% saat aplikasi tutup!",
-            "color: #a855f7; font-weight: bold;",
-          );
-        }
-      }
-    };
-    initNotifications();
-  }, []);
-
-  // Check reminders and deadlines (Foreground Fallback)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const now = new Date().getTime();
-      let hasChanges = false;
-
-      const updatedTasks = tasks.map((task) => {
-        const taskTime = new Date(task.time).getTime();
-        const reminderTime = taskTime - (task.reminderMinutes || 0) * 60 * 1000;
-        let newTask = { ...task };
-
-        // 1. Foreground Check for early reminder
-        if (
-          !task.done &&
-          !task.reminderSent &&
-          task.reminderMinutes > 0 &&
-          now >= reminderTime &&
-          now < taskTime
-        ) {
-          if (Notification.permission === "granted") {
-            new Notification("🔔 Reminder: Remindly", {
-              body: `Upcoming: ${task.text} (in ${task.reminderMinutes} mins)`,
-              icon: "/bell.jpg",
-            });
-          }
-
-          playSound();
-          newTask.reminderSent = true;
-          hasChanges = true;
-        }
-
-        // 2. Foreground Check for deadline
-        if (!task.done && !task.notified && now >= taskTime) {
-          if (Notification.permission === "granted") {
-            new Notification("⏰ Remindly: Deadline Reach!", {
-              body: task.text,
-              icon: "/bell.jpg",
-            });
-            newTask.notified = true;
-          }
-
-          playSound();
-
-          setHistory((prev) =>
-            [
-              {
-                id: Date.now(),
-                text: task.text,
-                time: new Date().toISOString(),
-                priority: task.priority,
-              },
-              ...prev,
-            ].slice(0, 50),
-          );
-
-          hasChanges = true;
-          newTask.done = true;
-        }
-
-        return newTask;
-      });
-
-      if (hasChanges) {
-        setTasks(updatedTasks);
-      }
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [tasks, playSound]);
-
   // Add task
-  const addTask = useCallback(
-    (text, time, priority, reminderMinutes) => {
-      const timestamp = new Date(time).getTime();
-      const earlyReminderMinutes = reminderMinutes || 0;
-      const reminderTimestamp = timestamp - earlyReminderMinutes * 60 * 1000;
+  const addTask = useCallback((text, time, priority) => {
+    const newTask = {
+      id: Date.now(),
+      text,
+      time,
+      priority: priority || "medium",
+      done: false,
+      createdAt: new Date().toISOString(),
+    };
+    setTasks((prev) => [...prev, newTask]);
 
-      const newTask = {
-        id: Date.now(),
-        text,
-        time,
-        priority: priority || "medium",
-        reminderMinutes: earlyReminderMinutes,
-        reminderSent: false,
-        done: false,
-        createdAt: new Date().toISOString(),
-      };
-      setTasks((prev) => [...prev, newTask]);
-
-      // Schedule background notifications
-      scheduleNotification("⏰ Deadline Reach!", text, timestamp);
-      if (earlyReminderMinutes > 0) {
-        scheduleNotification(
-          "🔔 Upcoming Reminder",
-          `${text} (${earlyReminderMinutes} mins left)`,
-          reminderTimestamp,
-        );
-      }
-
-      confetti({
-        particleCount: 50,
-        spread: 60,
-        origin: { y: 0.8 },
-        colors: ["#a855f7", "#7c3aed", "#ffffff"],
-      });
-    },
-    [scheduleNotification],
-  );
+    confetti({
+      particleCount: 50,
+      spread: 60,
+      origin: { y: 0.8 },
+      colors: ["#a855f7", "#7c3aed", "#ffffff"],
+    });
+  }, []);
 
   // Delete task
   const deleteTask = useCallback((id) => {
@@ -277,27 +101,12 @@ function App() {
     }
   }, []);
 
-  const testNotification = useCallback(() => {
-    if (Notification.permission === "granted") {
-      new Notification("🔔 Test Notification", {
-        body: "This is a test reminder from Remindly!",
-        icon: "/bell.jpg",
-      });
-    }
-    playSound();
-    confetti({
-      particleCount: 150,
-      spread: 70,
-      origin: { y: 0.6 },
-    });
-  }, [playSound]);
-
   return (
     <div className="app">
       <header className="header glass-card">
         <div className="logo-section">
           <div className="bell-icon">
-            <Bell size={24} fill="currentColor" />
+            <ListTodo size={24} />
           </div>
           <h1>Remindly</h1>
         </div>
@@ -309,23 +118,6 @@ function App() {
           >
             <BarChart3 size={20} />
           </button>
-          <div className="sound-selector">
-            <Settings size={18} style={{ opacity: 0.6 }} />
-            {/* <select
-              value={soundType}
-              onChange={(e) => setSoundType(e.target.value)}
-              className="mini-select"
-              style={{
-                background: "transparent",
-                border: "none",
-                color: "var(--text-secondary)",
-              }}
-            >
-              <option value="ping">Ping</option>
-              <option value="digital">Digital</option>
-              <option value="alert">Alert</option>
-            </select> */}
-          </div>
         </div>
       </header>
 
@@ -354,16 +146,9 @@ function App() {
         }}
       >
         <h2 style={{ fontSize: "1.2rem", color: "var(--text-secondary)" }}>
-          Your Reminders
+          Your Tasks
         </h2>
         <div style={{ display: "flex", gap: "8px" }}>
-          <button
-            className="icon-btn"
-            onClick={testNotification}
-            title="Test Notification"
-          >
-            <Zap size={20} />
-          </button>
           <button
             className="icon-btn delete"
             onClick={clearAll}
