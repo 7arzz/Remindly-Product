@@ -20,14 +20,14 @@ export default defineConfig({
         start_url: "/",
         icons: [
           {
-            src: "/bell.jpg",
+            src: "/bell.png",
             sizes: "192x192",
-            type: "image/jpg",
+            type: "image/png",
           },
           {
-            src: "/bell.jpg",
+            src: "/bell.png",
             sizes: "512x512",
-            type: "image/jpg",
+            type: "image/png",
           },
         ],
       },
