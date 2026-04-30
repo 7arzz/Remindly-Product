@@ -1,5 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
-import { BarChart3, Trash2, ListTodo, LogIn, LogOut, User as UserIcon, Globe } from "lucide-react";
+import { 
+  BarChart3, Trash2, ListTodo, LogIn, LogOut, 
+  User as UserIcon, Globe, FileText, CheckCircle2 
+} from "lucide-react";
 import confetti from "canvas-confetti";
 import FilterControls from "./components/FilterControls";
 import ProgressBar from "./components/ProgressBar";
@@ -7,6 +10,7 @@ import StatsDrawer from "./components/StatsDrawer";
 import TaskInput from "./components/TaskInput";
 import TaskList from "./components/TaskList";
 import Detail from "./components/Detail";
+import SummarySection from "./components/SummarySection";
 import { auth, db, loginWithGoogle, logout } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { 
@@ -27,6 +31,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState([]);
+  const [activeTab, setActiveTab] = useState("tasks"); // "tasks" or "summaries"
   const [filter, setFilter] = useState(
     () => localStorage.getItem("remindly_filter") || "all",
   );
@@ -53,7 +58,6 @@ function App() {
       return;
     }
 
-    // No userId filter - everyone sees everything
     const q = query(collection(db, "tasks"), orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const taskData = snapshot.docs.map((doc) => ({
@@ -96,7 +100,7 @@ function App() {
         particleCount: 50,
         spread: 60,
         origin: { y: 0.8 },
-        colors: ["#6366f1", "#4f46e5", "#ffffff"],
+        colors: ["#64ffda", "#00bcd4", "#ffffff"],
       });
     } catch (error) {
       console.error("Error adding task: ", error);
@@ -136,6 +140,7 @@ function App() {
           particleCount: 100,
           spread: 70,
           origin: { y: 0.6 },
+          colors: ["#64ffda", "#00bcd4", "#ffffff"],
         });
       }
     } catch (error) {
@@ -145,7 +150,7 @@ function App() {
 
   const clearAll = useCallback(async () => {
     if (!user) return;
-    if (window.confirm("Are you sure you want to clear ALL PUBLIC tasks? This will delete everyone's data.")) {
+    if (window.confirm("Are you sure you want to clear ALL PUBLIC tasks?")) {
       try {
         const q = query(collection(db, "tasks"));
         const snapshot = await getDocs(q);
@@ -160,6 +165,15 @@ function App() {
     }
   }, [user]);
 
+  const handleLogin = async () => {
+    try {
+      await loginWithGoogle();
+    } catch (error) {
+      console.error("Login error:", error);
+      alert(`Login failed: ${error.message}\n\nMake sure Google Auth is enabled and domain is authorized.`);
+    }
+  };
+
   if (loading) {
     return (
       <div className="loading-screen">
@@ -167,15 +181,6 @@ function App() {
       </div>
     );
   }
-
-  const handleLogin = async () => {
-    try {
-      await loginWithGoogle();
-    } catch (error) {
-      console.error("Login error:", error);
-      alert(`Login failed: ${error.message}\n\nMake sure your domain is added to 'Authorized domains' in Firebase Console.`);
-    }
-  };
 
   if (!user) {
     return (
@@ -190,7 +195,7 @@ function App() {
         </header>
         <div className="glass-card welcome-card">
           <h2>Welcome to Remindly</h2>
-          <p>Organize your tasks and assignments in a premium, <b>collaborative</b> cloud environment.</p>
+          <p>Organize your tasks and summaries in a premium, <b>collaborative</b> Sea Space.</p>
           <button className="primary login-btn" onClick={handleLogin}>
             <LogIn size={20} />
             Sign in with Google
@@ -210,7 +215,7 @@ function App() {
           <div className="user-info-header">
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <h1>Remindly</h1>
-              <span className="badge-public"><Globe size={12}/> Public Space</span>
+              <span className="badge-public"><Globe size={12}/> Sea Space</span>
             </div>
             <span className="user-email">{user.email}</span>
           </div>
@@ -233,54 +238,63 @@ function App() {
         </div>
       </header>
 
-      <ProgressBar tasks={tasks} />
+      <nav className="tab-navigation">
+        <button 
+          className={`tab-btn ${activeTab === "tasks" ? "active" : ""}`}
+          onClick={() => setActiveTab("tasks")}
+        >
+          <CheckCircle2 size={18} />
+          Tasks
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === "summaries" ? "active" : ""}`}
+          onClick={() => setActiveTab("summaries")}
+        >
+          <FileText size={18} />
+          Summaries
+        </button>
+      </nav>
 
-      <div className="glass-card">
-        <TaskInput addTask={addTask} />
-      </div>
+      {activeTab === "tasks" ? (
+        <div className="tab-content fadeIn">
+          <ProgressBar tasks={tasks} />
 
-      <FilterControls
-        filter={filter}
-        setFilter={setFilter}
-        sortBy={sortBy}
-        setSortBy={setSortBy}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-      />
+          <div className="glass-card">
+            <TaskInput addTask={addTask} />
+          </div>
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "0 8px",
-          marginBottom: "12px",
-        }}
-      >
-        <h2 style={{ fontSize: "1.2rem", color: "var(--text-secondary)" }}>
-          Community Tasks
-        </h2>
-        <div style={{ display: "flex", gap: "8px" }}>
-          <button
-            className="icon-btn delete"
-            onClick={clearAll}
-            title="Clear All"
-          >
-            <Trash2 size={20} />
-          </button>
+          <FilterControls
+            filter={filter}
+            setFilter={setFilter}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+          />
+
+          <div className="section-header">
+            <h2 className="section-title">Community Tasks</h2>
+            <button className="icon-btn delete" onClick={clearAll} title="Clear All">
+              <Trash2 size={20} />
+            </button>
+          </div>
+
+          <TaskList
+            tasks={tasks}
+            deleteTask={deleteTask}
+            toggleDone={toggleDone}
+            updateTask={updateTask}
+            filter={filter}
+            sortBy={sortBy}
+            searchQuery={searchQuery}
+            onTaskClick={(task) => setSelectedTaskId(task.id)}
+          />
         </div>
-      </div>
-
-      <TaskList
-        tasks={tasks}
-        deleteTask={deleteTask}
-        toggleDone={toggleDone}
-        updateTask={updateTask}
-        filter={filter}
-        sortBy={sortBy}
-        searchQuery={searchQuery}
-        onTaskClick={(task) => setSelectedTaskId(task.id)}
-      />
+      ) : (
+        <div className="tab-content fadeIn">
+          <SummarySection currentUser={user} />
+        </div>
+      )}
 
       <StatsDrawer
         isOpen={isStatsOpen}
