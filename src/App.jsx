@@ -168,6 +168,15 @@ function App() {
     );
   }
 
+  const handleLogin = async () => {
+    try {
+      await loginWithGoogle();
+    } catch (error) {
+      console.error("Login error:", error);
+      alert(`Login failed: ${error.message}\n\nMake sure your domain is added to 'Authorized domains' in Firebase Console.`);
+    }
+  };
+
   if (!user) {
     return (
       <div className="app login-view">
@@ -182,7 +191,7 @@ function App() {
         <div className="glass-card welcome-card">
           <h2>Welcome to Remindly</h2>
           <p>Organize your tasks and assignments in a premium, <b>collaborative</b> cloud environment.</p>
-          <button className="primary login-btn" onClick={loginWithGoogle}>
+          <button className="primary login-btn" onClick={handleLogin}>
             <LogIn size={20} />
             Sign in with Google
           </button>

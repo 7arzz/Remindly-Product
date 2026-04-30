@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
 
@@ -21,6 +21,7 @@ const googleProvider = new GoogleAuthProvider();
 const messaging = getMessaging(app);
 
 export const loginWithGoogle = () => signInWithPopup(auth, googleProvider);
+export const loginWithRedirect = () => signInWithRedirect(auth, googleProvider);
 export const logout = () => signOut(auth);
 
 export const requestForToken = (vapidKey) => {
