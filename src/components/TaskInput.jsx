@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Plus, Calendar, Type, FileText, ChevronDown, ChevronUp, Camera, X } from "lucide-react";
 
 function TaskInput({ addTask }) {
