@@ -1,28 +1,16 @@
 import { useState } from "react";
-import { Send, Trash2, User as UserIcon, Camera, X, Loader2 } from "lucide-react";
+import { Send, Trash2, User as UserIcon, X, Loader2 } from "lucide-react";
 
 function Answer({ answers = [], onAddAnswer, onDeleteAnswer, currentUser }) {
   const [newAnswer, setNewAnswer] = useState("");
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
-    }
-  };
-
   const handleAdd = async () => {
-    if (!newAnswer.trim() && !imageFile) return;
+    if (!newAnswer.trim()) return;
     setIsSubmitting(true);
     try {
-      await onAddAnswer(newAnswer, imageFile);
+      await onAddAnswer(newAnswer);
       setNewAnswer("");
-      setImageFile(null);
-      setImagePreview(null);
     } catch (error) {
       console.error("Error adding answer:", error);
       alert("Failed to post answer. Please try again.");
@@ -46,41 +34,11 @@ function Answer({ answers = [], onAddAnswer, onDeleteAnswer, currentUser }) {
           disabled={isSubmitting}
         />
         
-        {imagePreview && (
-          <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border border-accent-primary/30 group fadeIn">
-            <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-            <button 
-              className="absolute top-1 right-1 bg-black/60 text-white p-1 rounded-full hover:bg-red-500 transition-colors" 
-              onClick={() => { setImageFile(null); setImagePreview(null); }}
-            >
-              <X size={12} />
-            </button>
-          </div>
-        )}
-
-        <div className="flex flex-wrap justify-between items-center gap-3 pt-3 border-t border-border-primary/20">
-          <div className="flex gap-2">
-            <input 
-              type="file" 
-              id="answer-image" 
-              accept="image/*" 
-              className="hidden" 
-              onChange={handleFileChange}
-              disabled={isSubmitting}
-            />
-            <label 
-              htmlFor="answer-image" 
-              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-bg-card border border-border-primary/50 text-text-secondary hover:text-accent-primary hover:border-accent-primary cursor-pointer transition-all text-xs font-bold uppercase tracking-wider"
-            >
-              <Camera size={16} />
-              <span className="hidden xs:block">Add Image</span>
-            </label>
-          </div>
-          
+        <div className="flex justify-end items-center gap-3 pt-3 border-t border-border-primary/20">
           <button 
-            className={`btn-primary py-2.5 px-5 text-sm ${isSubmitting || (!newAnswer.trim() && !imageFile) ? 'opacity-50 grayscale scale-100 cursor-not-allowed' : ''}`}
+            className={`btn-primary py-2.5 px-5 text-sm ${isSubmitting || !newAnswer.trim() ? 'opacity-50 grayscale scale-100 cursor-not-allowed' : ''}`}
             onClick={handleAdd} 
-            disabled={isSubmitting || (!newAnswer.trim() && !imageFile)}
+            disabled={isSubmitting || !newAnswer.trim()}
           >
             {isSubmitting ? (
               <><Loader2 className="animate-spin" size={16} /> <span>Posting...</span></>
@@ -110,15 +68,6 @@ function Answer({ answers = [], onAddAnswer, onDeleteAnswer, currentUser }) {
               <div className="text-text-primary text-sm sm:text-base leading-relaxed whitespace-pre-wrap mb-4">
                 {ans.text}
               </div>
-
-              {ans.imageUrl && (
-                <div 
-                  className="rounded-xl overflow-hidden border border-border-primary/50 mb-4 cursor-zoom-in group/img"
-                  onClick={() => window.open(ans.imageUrl, '_blank')}
-                >
-                  <img src={ans.imageUrl} alt="Answer attachment" className="w-full max-h-64 object-contain bg-black/40 transition-transform duration-500 group-hover/img:scale-[1.02]" />
-                </div>
-              )}
 
               <div className="flex justify-between items-center mt-2">
                 <div className="text-[10px] font-medium text-text-muted uppercase tracking-widest">

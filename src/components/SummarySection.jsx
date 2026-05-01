@@ -1,32 +1,26 @@
 import { useState, useEffect } from "react";
-import { compressImage } from "../utils/imageUtils";
 import { 
-  FileText, Plus, Trash2, Edit3, Calendar, Download, 
-  File, X, Upload, Loader2, User as UserIcon, Search 
+  FileText, Plus, Trash2, Edit3, Calendar, 
+  X, Loader2, User as UserIcon, Search 
 } from "lucide-react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { 
   collection, onSnapshot, addDoc, updateDoc, 
-  deleteDoc, doc, query, orderBy 
+  deleteDoc, doc, query 
 } from "firebase/firestore";
-import { 
-  ref, uploadBytesResumable, getDownloadURL, deleteObject 
-} from "firebase/storage";
-import { db, storage } from "../firebase";
+import { db } from "../firebase";
 
 function SummarySection({ currentUser }) {
   const [summaries, setSummaries] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
 
   // Form State
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [file, setFile] = useState(null);
 
   useEffect(() => {
     const q = query(collection(db, "summaries"));
@@ -43,39 +37,11 @@ function SummarySection({ currentUser }) {
     if (!title.trim() || !content.trim()) return;
     setLoading(true);
 
-    let fileUrl = "";
-    let fileName = "";
-
     try {
-      if (file) {
-        const compressedFile = await compressImage(file);
-        const storageRef = ref(storage, `summaries/${Date.now()}_${compressedFile.name}`);
-        const uploadTask = uploadBytesResumable(storageRef, compressedFile);
-
-        const url = await new Promise((resolve, reject) => {
-          uploadTask.on('state_changed', 
-            (snapshot) => {
-              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-              setUploadProgress(progress);
-            }, 
-            (error) => reject(error), 
-            async () => {
-              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-              resolve(downloadURL);
-            }
-          );
-        });
-
-        fileUrl = url;
-        fileName = file.name;
-      }
-
       const summaryData = {
         title,
         content,
         date,
-        fileUrl,
-        fileName,
         userId: currentUser.uid,
         userName: currentUser.displayName || currentUser.email.split('@')[0],
         userEmail: currentUser.email,
@@ -83,13 +49,7 @@ function SummarySection({ currentUser }) {
       };
 
       if (editingId) {
-        // If editing, merge with old data if no new file
-        const oldSummary = summaries.find(s => s.id === editingId);
-        await updateDoc(doc(db, "summaries", editingId), {
-          ...summaryData,
-          fileUrl: fileUrl || oldSummary.fileUrl,
-          fileName: fileName || oldSummary.fileName,
-        });
+        await updateDoc(doc(db, "summaries", editingId), summaryData);
       } else {
         await addDoc(collection(db, "summaries"), summaryData);
       }
@@ -97,15 +57,7 @@ function SummarySection({ currentUser }) {
       resetForm();
     } catch (error) {
       console.error("Error saving summary:", error);
-      let errorMessage = "Error saving summary.";
-      if (error.code === 'storage/unauthorized') {
-        errorMessage = "Unauthorized: Check Firebase Storage rules.";
-      } else if (error.code === 'permission-denied') {
-        errorMessage = "Permission Denied: Check Firestore rules.";
-      } else {
-        errorMessage += " " + (error.message || "Unknown error.");
-      }
-      alert(errorMessage);
+      alert("Error saving summary.");
     } finally {
       setLoading(false);
     }
@@ -114,10 +66,6 @@ function SummarySection({ currentUser }) {
   const handleDelete = async (summary) => {
     if (!window.confirm("Are you sure you want to delete this summary?")) return;
     try {
-      if (summary.fileUrl) {
-        const fileRef = ref(storage, summary.fileUrl);
-        await deleteObject(fileRef).catch(e => console.log("File already deleted or missing"));
-      }
       await deleteDoc(doc(db, "summaries", summary.id));
     } catch (error) {
       console.error("Error deleting summary:", error);
@@ -136,10 +84,8 @@ function SummarySection({ currentUser }) {
     setTitle("");
     setContent("");
     setDate(new Date().toISOString().split('T')[0]);
-    setFile(null);
     setEditingId(null);
     setIsModalOpen(false);
-    setUploadProgress(0);
   };
 
   const filteredSummaries = summaries
@@ -200,21 +146,6 @@ function SummarySection({ currentUser }) {
               
               <p className="text-text-secondary text-sm leading-relaxed mb-6 line-clamp-3">{s.content}</p>
               
-              {s.fileUrl && (
-                <a 
-                  href={s.fileUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="flex items-center gap-3 p-3 bg-bg-primary/40 border border-border-primary/50 rounded-xl mb-6 hover:border-accent-primary/40 transition-all group/file"
-                >
-                  <div className="p-2 bg-accent-primary/10 text-accent-primary rounded-lg">
-                    <File size={16} />
-                  </div>
-                  <span className="flex-1 text-xs font-medium text-text-secondary truncate">{s.fileName}</span>
-                  <Download size={14} className="text-text-muted group-hover/file:text-accent-primary" />
-                </a>
-              )}
-
               <div className="mt-auto pt-4 border-t border-border-primary/30 flex justify-between items-center">
                 <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-text-muted">
                   <Calendar size={12} className="text-accent-primary/40" />
@@ -285,42 +216,6 @@ function SummarySection({ currentUser }) {
                     />
                   </div>
 
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs font-black uppercase tracking-widest text-text-muted ml-1">File Attachment (Optional)</label>
-                    <div className="relative">
-                      <input 
-                        type="file" 
-                        id="summary-file"
-                        className="hidden"
-                        onChange={e => setFile(e.target.files[0])}
-                      />
-                      <label 
-                        htmlFor="summary-file" 
-                        className="flex flex-col items-center justify-center gap-3 p-6 bg-bg-secondary/30 border-2 border-dashed border-border-primary/50 rounded-2xl cursor-pointer hover:bg-bg-secondary/50 hover:border-accent-primary/50 transition-all"
-                      >
-                        {file ? (
-                          <div className="flex items-center gap-3 bg-accent-primary/10 text-accent-primary px-4 py-2 rounded-xl border border-accent-primary/20">
-                            <File size={20} />
-                            <span className="text-sm font-bold truncate max-w-[200px]">{file.name}</span>
-                            <button onClick={(e) => { e.preventDefault(); setFile(null); }} className="p-1 hover:bg-rose-500 hover:text-white rounded-full transition-colors">
-                              <X size={14} />
-                            </button>
-                          </div>
-                        ) : (
-                          <>
-                            <div className="p-3 bg-bg-card rounded-2xl text-text-muted">
-                              <Upload size={28} />
-                            </div>
-                            <div className="text-center">
-                              <p className="text-sm font-bold text-text-secondary">Click to upload file</p>
-                              <p className="text-[10px] text-text-muted mt-1 uppercase tracking-tighter">PDF, DOC, Images (Max 10MB)</p>
-                            </div>
-                          </>
-                        )}
-                      </label>
-                    </div>
-                  </div>
-
                   <button 
                     type="submit" 
                     className={`btn-primary w-full py-4 mt-2 ${loading ? 'opacity-80' : ''}`} 
@@ -329,11 +224,7 @@ function SummarySection({ currentUser }) {
                     {loading ? (
                       <div className="flex items-center gap-3">
                         <Loader2 className="animate-spin" size={20} /> 
-                        <span>
-                          {uploadProgress > 0 && uploadProgress < 100 
-                            ? `Uploading ${Math.round(uploadProgress)}%` 
-                            : "Saving..."}
-                        </span>
+                        <span>Saving...</span>
                       </div>
                     ) : (
                       <span className="flex items-center gap-2">

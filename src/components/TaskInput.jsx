@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Calendar, Type, FileText, ChevronDown, ChevronUp, Camera, X, Loader2 } from "lucide-react";
+import { Plus, Calendar, Type, FileText, ChevronDown, ChevronUp, X, Loader2 } from "lucide-react";
 
 function TaskInput({ addTask }) {
   const [text, setText] = useState("");
@@ -7,31 +7,19 @@ function TaskInput({ addTask }) {
   const [priority, setPriority] = useState("medium");
   const [detail, setDetail] = useState("");
   const [showDetail, setShowDetail] = useState(false);
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
-    }
-  };
 
   const handleAdd = async () => {
     if (!text || !time || loading) return;
     setLoading(true);
     try {
-      const success = await addTask(text, time, priority, detail, imageFile);
+      const success = await addTask(text, time, priority, detail);
       if (success !== false) {
         setText("");
         setTime("");
         setPriority("medium");
         setDetail("");
         setShowDetail(false);
-        setImageFile(null);
-        setImagePreview(null);
       }
     } finally {
       setLoading(false);
@@ -107,46 +95,15 @@ function TaskInput({ addTask }) {
           ))}
         </div>
 
-        <div className="flex gap-3 h-[48px] flex-1">
-          <input 
-            type="file" 
-            id="task-image" 
-            accept="image/*" 
-            className="hidden" 
-            onChange={handleFileChange}
-            disabled={loading}
-          />
-          <label 
-            htmlFor="task-image" 
-            className={`flex items-center justify-center aspect-square h-full bg-bg-secondary/50 border border-border-primary/50 rounded-xl text-text-secondary hover:text-accent-primary hover:border-accent-primary cursor-pointer transition-all active:scale-95 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            <Camera size={22} />
-          </label>
-
-          <button 
-            className={`btn-primary flex-1 ${(!text || !time || loading) ? 'opacity-50 cursor-not-allowed scale-100' : ''}`}
-            onClick={handleAdd}
-            disabled={!text || !time || loading}
-          >
-            {loading ? <Loader2 size={20} className="animate-spin" /> : <Plus size={20} />}
-            <span>{loading ? 'Adding...' : 'Add Task'}</span>
-          </button>
-        </div>
+        <button 
+          className={`btn-primary flex-1 ${(!text || !time || loading) ? 'opacity-50 cursor-not-allowed scale-100' : ''}`}
+          onClick={handleAdd}
+          disabled={!text || !time || loading}
+        >
+          {loading ? <Loader2 size={20} className="animate-spin" /> : <Plus size={20} />}
+          <span>{loading ? 'Adding...' : 'Add Task'}</span>
+        </button>
       </div>
-
-      {imagePreview && (
-        <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-xl overflow-hidden border-2 border-accent-primary/30 group fadeIn">
-          <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-          {!loading && (
-            <button 
-              className="absolute top-1 right-1 bg-black/60 text-white p-1 rounded-full hover:bg-red-500 transition-colors" 
-              onClick={() => { setImageFile(null); setImagePreview(null); }}
-            >
-              <X size={14} />
-            </button>
-          )}
-        </div>
-      )}
     </div>
   );
 }

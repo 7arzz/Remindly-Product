@@ -91,20 +91,6 @@ function TaskCard({ task, deleteTask, toggleDone, updateTask, onClick }) {
               {task.text}
             </h3>
             
-            {task.imageUrl && (
-              <div 
-                className="relative my-3 rounded-xl overflow-hidden border border-border-primary/50 group/img" 
-                onClick={(e) => { e.stopPropagation(); window.open(task.imageUrl, '_blank'); }}
-              >
-                <img src={task.imageUrl} alt="Task attachment" className="w-full max-h-48 object-cover transition-transform duration-500 group-hover/img:scale-105" />
-                <div className="absolute inset-0 bg-accent-primary/10 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
-                   <div className="bg-black/60 p-2 rounded-full backdrop-blur-sm">
-                      <Edit3 size={16} className="text-white" />
-                   </div>
-                </div>
-              </div>
-            )}
-
             <div className="flex flex-wrap items-center gap-3 mt-auto">
               <div className="flex items-center gap-1.5 text-text-muted text-[10px] sm:text-xs font-medium">
                 <Clock size={12} className="text-accent-primary/40" />
