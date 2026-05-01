@@ -150,154 +150,200 @@ function SummarySection({ currentUser }) {
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   return (
-    <div className="summary-section">
-      <div className="summary-header-actions">
-        <div className="search-bar-container" style={{ flex: 1 }}>
-          <Search size={18} className="search-icon" />
+    <div className="flex flex-col gap-6 sm:gap-8">
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1 group">
+          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-accent-primary transition-colors" />
           <input 
             type="text" 
             placeholder="Search summaries..." 
-            className="search-input"
+            className="w-full bg-bg-secondary/50 border border-border-primary/50 rounded-xl py-3.5 pl-11 pr-4 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary focus:bg-bg-primary transition-all"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <button className="primary add-summary-btn" onClick={() => setIsModalOpen(true)}>
+        <button 
+          className="btn-primary py-3.5 px-6 shadow-xl shadow-accent-primary/10 whitespace-nowrap" 
+          onClick={() => setIsModalOpen(true)}
+        >
           <Plus size={20} />
-          New Summary
+          <span>New Summary</span>
         </button>
       </div>
 
-      <div className="summaries-grid">
-        {filteredSummaries.map((s) => (
-          <Motion.div 
-            key={s.id} 
-            layout
-            className="glass-card summary-card"
-          >
-            <div className="summary-card-header">
-              <h3 className="summary-card-title">{s.title}</h3>
-              <div className="summary-card-actions">
-                {s.userEmail === currentUser.email && (
-                  <>
-                    <button className="icon-btn" onClick={() => handleEdit(s)}><Edit3 size={16}/></button>
-                    <button className="icon-btn delete" onClick={() => handleDelete(s)}><Trash2 size={16}/></button>
-                  </>
-                )}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <AnimatePresence>
+          {filteredSummaries.map((s) => (
+            <Motion.div 
+              key={s.id} 
+              layout
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="glass-card flex flex-col p-6 hover:translate-y-[-4px] active:scale-[0.98] group"
+            >
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="text-xl font-bold text-text-primary leading-tight group-hover:text-accent-primary transition-colors">{s.title}</h3>
+                <div className="flex gap-1">
+                  {s.userEmail === currentUser.email && (
+                    <>
+                      <button className="p-2 rounded-lg text-text-muted hover:text-accent-primary hover:bg-accent-primary/10 transition-all opacity-0 group-hover:opacity-100" onClick={() => handleEdit(s)}>
+                        <Edit3 size={16}/>
+                      </button>
+                      <button className="p-2 rounded-lg text-text-muted hover:text-rose-400 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100" onClick={() => handleDelete(s)}>
+                        <Trash2 size={16}/>
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-            
-            <p className="summary-card-content">{s.content}</p>
-            
-            {s.fileUrl && (
-              <a href={s.fileUrl} target="_blank" rel="noopener noreferrer" className="file-attachment">
-                <File size={14} />
-                <span>{s.fileName}</span>
-                <Download size={14} className="download-icon" />
-              </a>
-            )}
+              
+              <p className="text-text-secondary text-sm leading-relaxed mb-6 line-clamp-3">{s.content}</p>
+              
+              {s.fileUrl && (
+                <a 
+                  href={s.fileUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="flex items-center gap-3 p-3 bg-bg-primary/40 border border-border-primary/50 rounded-xl mb-6 hover:border-accent-primary/40 transition-all group/file"
+                >
+                  <div className="p-2 bg-accent-primary/10 text-accent-primary rounded-lg">
+                    <File size={16} />
+                  </div>
+                  <span className="flex-1 text-xs font-medium text-text-secondary truncate">{s.fileName}</span>
+                  <Download size={14} className="text-text-muted group-hover/file:text-accent-primary" />
+                </a>
+              )}
 
-            <div className="summary-card-footer">
-              <div className="summary-meta">
-                <Calendar size={12} />
-                <span>{s.date}</span>
+              <div className="mt-auto pt-4 border-t border-border-primary/30 flex justify-between items-center">
+                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-text-muted">
+                  <Calendar size={12} className="text-accent-primary/40" />
+                  <span>{s.date}</span>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-accent-primary">
+                  <UserIcon size={12} />
+                  <span>{s.userName}</span>
+                </div>
               </div>
-              <div className="summary-author">
-                <UserIcon size={12} />
-                <span>{s.userName}</span>
-              </div>
-            </div>
-          </Motion.div>
-        ))}
+            </Motion.div>
+          ))}
+        </AnimatePresence>
       </div>
 
       <AnimatePresence>
         {isModalOpen && (
-          <div className="modal-overlay" onClick={resetForm}>
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[100] flex items-center justify-center p-4 sm:p-6" onClick={resetForm}>
             <Motion.div 
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="detail-modal summary-modal"
+              className="bg-bg-card border border-border-primary rounded-[32px] w-full max-w-xl max-h-[90vh] overflow-y-auto custom-scrollbar shadow-2xl relative"
               onClick={e => e.stopPropagation()}
             >
-              <div className="modal-header">
-                <h2>{editingId ? "Edit Summary" : "Create New Summary"}</h2>
-                <button className="icon-btn" onClick={resetForm}><X size={24}/></button>
-              </div>
-
-              <form onSubmit={handleSubmit} className="summary-form">
-                <div className="input-field">
-                  <label>Summary Title</label>
-                  <input 
-                    type="text" 
-                    value={title} 
-                    onChange={e => setTitle(e.target.value)}
-                    placeholder="e.g., Mathematics Lecture Notes"
-                    required
-                  />
+              <div className="p-6 sm:p-8 flex flex-col gap-6">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-black text-text-primary tracking-tight">
+                    {editingId ? "Edit Summary" : "Create New Summary"}
+                  </h2>
+                  <button className="p-2 rounded-xl bg-bg-secondary text-text-muted hover:text-rose-400 hover:bg-rose-500/10 transition-all" onClick={resetForm}>
+                    <X size={24}/>
+                  </button>
                 </div>
 
-                <div className="input-field">
-                  <label>Date</label>
-                  <input 
-                    type="date" 
-                    value={date} 
-                    onChange={e => setDate(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="input-field">
-                  <label>Description / Content</label>
-                  <textarea 
-                    value={content} 
-                    onChange={e => setContent(e.target.value)}
-                    placeholder="Briefly describe the summary..."
-                    className="answer-textarea"
-                    required
-                  />
-                </div>
-
-                <div className="input-field">
-                  <label>File Attachment (Optional)</label>
-                  <div className="file-upload-zone">
+                <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-black uppercase tracking-widest text-text-muted ml-1">Summary Title</label>
                     <input 
-                      type="file" 
-                      id="summary-file"
-                      style={{ display: 'none' }}
-                      onChange={e => setFile(e.target.files[0])}
+                      type="text" 
+                      value={title} 
+                      onChange={e => setTitle(e.target.value)}
+                      placeholder="e.g., Mathematics Lecture Notes"
+                      className="w-full bg-bg-secondary/50 border border-border-primary/50 rounded-xl py-3 px-4 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary transition-all"
+                      required
                     />
-                    <label htmlFor="summary-file" className="file-upload-label">
-                      {file ? (
-                        <div className="file-selected">
-                          <File size={20} />
-                          <span>{file.name}</span>
-                          <X size={16} onClick={(e) => { e.preventDefault(); setFile(null); }} className="remove-file" />
-                        </div>
-                      ) : (
-                        <div className="file-placeholder">
-                          <Upload size={24} />
-                          <span>Click to upload file (PDF, Doc, Image)</span>
-                        </div>
-                      )}
-                    </label>
                   </div>
-                </div>
 
-                <button type="submit" className="primary" disabled={loading}>
-                  {loading ? (
-                    <>
-                      <Loader2 className="spin" size={20} /> 
-                      {uploadProgress > 0 && uploadProgress < 100 
-                        ? `Uploading ${Math.round(uploadProgress)}%` 
-                        : "Saving..."}
-                    </>
-                  ) : (
-                    <>{editingId ? "Update Summary" : "Save Summary"}</>
-                  )}
-                </button>
-              </form>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-black uppercase tracking-widest text-text-muted ml-1">Date</label>
+                    <input 
+                      type="date" 
+                      value={date} 
+                      onChange={e => setDate(e.target.value)}
+                      className="w-full bg-bg-secondary/50 border border-border-primary/50 rounded-xl py-3 px-4 text-text-primary focus:outline-none focus:border-accent-primary transition-all"
+                      required
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-black uppercase tracking-widest text-text-muted ml-1">Content / Notes</label>
+                    <textarea 
+                      value={content} 
+                      onChange={e => setContent(e.target.value)}
+                      placeholder="Briefly describe the summary..."
+                      className="w-full bg-bg-secondary/50 border border-border-primary/50 rounded-xl p-4 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary transition-all min-h-[120px] resize-none"
+                      required
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-black uppercase tracking-widest text-text-muted ml-1">File Attachment (Optional)</label>
+                    <div className="relative">
+                      <input 
+                        type="file" 
+                        id="summary-file"
+                        className="hidden"
+                        onChange={e => setFile(e.target.files[0])}
+                      />
+                      <label 
+                        htmlFor="summary-file" 
+                        className="flex flex-col items-center justify-center gap-3 p-6 bg-bg-secondary/30 border-2 border-dashed border-border-primary/50 rounded-2xl cursor-pointer hover:bg-bg-secondary/50 hover:border-accent-primary/50 transition-all"
+                      >
+                        {file ? (
+                          <div className="flex items-center gap-3 bg-accent-primary/10 text-accent-primary px-4 py-2 rounded-xl border border-accent-primary/20">
+                            <File size={20} />
+                            <span className="text-sm font-bold truncate max-w-[200px]">{file.name}</span>
+                            <button onClick={(e) => { e.preventDefault(); setFile(null); }} className="p-1 hover:bg-rose-500 hover:text-white rounded-full transition-colors">
+                              <X size={14} />
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="p-3 bg-bg-card rounded-2xl text-text-muted">
+                              <Upload size={28} />
+                            </div>
+                            <div className="text-center">
+                              <p className="text-sm font-bold text-text-secondary">Click to upload file</p>
+                              <p className="text-[10px] text-text-muted mt-1 uppercase tracking-tighter">PDF, DOC, Images (Max 10MB)</p>
+                            </div>
+                          </>
+                        )}
+                      </label>
+                    </div>
+                  </div>
+
+                  <button 
+                    type="submit" 
+                    className={`btn-primary w-full py-4 mt-2 ${loading ? 'opacity-80' : ''}`} 
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <div className="flex items-center gap-3">
+                        <Loader2 className="animate-spin" size={20} /> 
+                        <span>
+                          {uploadProgress > 0 && uploadProgress < 100 
+                            ? `Uploading ${Math.round(uploadProgress)}%` 
+                            : "Saving..."}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        {editingId ? <Edit3 size={18} /> : <Plus size={18} />}
+                        {editingId ? "Update Summary" : "Create Summary"}
+                      </span>
+                    )}
+                  </button>
+                </form>
+              </div>
             </Motion.div>
           </div>
         )}

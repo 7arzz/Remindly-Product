@@ -33,51 +33,46 @@ function TaskCard({ task, deleteTask, toggleDone, updateTask, onClick }) {
   return (
     <Motion.div
       layout
-      initial={{ opacity: 0, scale: 0.9 }}
+      initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, x: -20 }}
-      whileHover={{ y: isEditing ? 0 : -2 }}
-      className={`task-item ${task.done ? "task-done" : ""}`}
-      style={{ flexDirection: "column", alignItems: "stretch" }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      whileHover={{ y: isEditing ? 0 : -3 }}
+      className={`relative p-5 rounded-2xl border transition-all duration-300 ${
+        task.done 
+        ? "bg-bg-card/30 border-border-primary/30 opacity-60 grayscale-[0.2]" 
+        : "bg-bg-card/80 border-border-primary/60 hover:border-accent-primary/50 shadow-lg shadow-black/20"
+      }`}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+      <div className="flex items-start gap-4">
         <button
-          className="icon-btn"
+          className={`shrink-0 mt-1 transition-all duration-300 transform active:scale-90 ${
+            task.done ? "text-accent-primary" : "text-text-muted hover:text-accent-primary/80"
+          }`}
           onClick={() => toggleDone(task.id)}
-          style={{
-            color: task.done ? "var(--accent-primary)" : "var(--text-muted)",
-          }}
           disabled={isEditing}
         >
-          {task.done ? <CheckCircle size={22} /> : <Circle size={22} />}
+          {task.done ? <CheckCircle size={24} strokeWidth={2.5} /> : <Circle size={24} strokeWidth={2} />}
         </button>
 
         {isEditing ? (
-          <div
-            style={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              gap: "8px",
-            }}
-          >
+          <div className="flex-1 flex flex-col gap-3 fadeIn">
             <input
               value={editText}
               onChange={(e) => setEditText(e.target.value)}
               autoFocus
-              className="edit-input"
+              className="w-full bg-bg-primary/50 border border-accent-primary/30 rounded-xl px-4 py-2 text-text-primary focus:outline-none focus:border-accent-primary transition-all shadow-inner"
             />
-            <div style={{ display: "flex", gap: "8px" }}>
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="datetime-local"
                 value={editTime}
                 onChange={(e) => setEditTime(e.target.value)}
-                className="edit-input mini"
+                className="flex-1 bg-bg-primary/50 border border-accent-primary/20 rounded-lg px-3 py-1.5 text-xs text-text-primary focus:outline-none focus:border-accent-primary transition-all"
               />
               <select
                 value={editPriority}
                 onChange={(e) => setEditPriority(e.target.value)}
-                className="edit-input mini"
+                className="sm:w-32 bg-bg-primary/50 border border-accent-primary/20 rounded-lg px-3 py-1.5 text-xs text-text-primary focus:outline-none focus:border-accent-primary transition-all"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -87,74 +82,94 @@ function TaskCard({ task, deleteTask, toggleDone, updateTask, onClick }) {
           </div>
         ) : (
           <div 
-            className="task-info clickable-task" 
-            style={{ flex: 1 }} 
+            className="flex-1 min-w-0 cursor-pointer group/content" 
             onClick={onClick}
           >
-            <span className="task-text">{task.text}</span>
+            <h3 className={`text-base sm:text-lg font-bold leading-tight mb-2 transition-all ${
+              task.done ? "line-through text-text-muted" : "text-text-primary group-hover/content:text-accent-primary"
+            }`}>
+              {task.text}
+            </h3>
+            
             {task.imageUrl && (
-              <div className="task-card-media" onClick={(e) => { e.stopPropagation(); window.open(task.imageUrl, '_blank'); }}>
-                <img src={task.imageUrl} alt="Task attachment" />
+              <div 
+                className="relative my-3 rounded-xl overflow-hidden border border-border-primary/50 group/img" 
+                onClick={(e) => { e.stopPropagation(); window.open(task.imageUrl, '_blank'); }}
+              >
+                <img src={task.imageUrl} alt="Task attachment" className="w-full max-h-48 object-cover transition-transform duration-500 group-hover/img:scale-105" />
+                <div className="absolute inset-0 bg-accent-primary/10 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
+                   <div className="bg-black/60 p-2 rounded-full backdrop-blur-sm">
+                      <Edit3 size={16} className="text-white" />
+                   </div>
+                </div>
               </div>
             )}
-            <div className="task-time">
-              <Clock size={12} />
-              <span style={{ whiteSpace: 'nowrap' }}>
-                {new Date(task.time).toLocaleString([], {
-                  month: "short",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </span>
-              <span className={`priority-badge priority-${task.priority}`}>
-                {task.priority}
-              </span>
-              {task.isAssignment && (
-                <span className="priority-badge priority-assignment">
-                  Assignment
+
+            <div className="flex flex-wrap items-center gap-3 mt-auto">
+              <div className="flex items-center gap-1.5 text-text-muted text-[10px] sm:text-xs font-medium">
+                <Clock size={12} className="text-accent-primary/40" />
+                <span>
+                  {new Date(task.time).toLocaleString([], {
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </span>
-              )}
+              </div>
+              
+              <div className="flex gap-2">
+                <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border ${
+                  task.priority === 'high' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' :
+                  task.priority === 'medium' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                  'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                }`}>
+                  {task.priority}
+                </span>
+                
+                {task.isAssignment && (
+                  <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border bg-indigo-500/10 text-indigo-400 border-indigo-500/20">
+                    Assignment
+                  </span>
+                )}
+              </div>
+
               {isExpired && !task.done && (
-                <span
-                  style={{
-                    color: "#ef4444",
-                    fontSize: "0.7rem",
-                    fontWeight: "bold",
-                  }}
-                >
-                  • EXPIRED
+                <span className="flex items-center gap-1 text-[10px] font-black text-rose-500 animate-pulse">
+                  <span className="w-1.5 h-1.5 bg-rose-500 rounded-full"></span>
+                  EXPIRED
                 </span>
               )}
             </div>
           </div>
         )}
 
-        <div style={{ display: "flex", gap: "4px" }}>
+        <div className="flex flex-col sm:flex-row gap-1 shrink-0">
           {isEditing ? (
             <>
               <button
-                className="icon-btn"
+                className="p-2 rounded-lg text-emerald-400 hover:bg-emerald-500/10 transition-colors"
                 onClick={handleSave}
-                style={{ color: "#10b981" }}
               >
                 <Check size={18} />
               </button>
               <button
-                className="icon-btn"
+                className="p-2 rounded-lg text-rose-400 hover:bg-rose-500/10 transition-colors"
                 onClick={() => setIsEditing(false)}
-                style={{ color: "#ef4444" }}
               >
                 <X size={18} />
               </button>
             </>
           ) : (
             <>
-              <button className="icon-btn" onClick={() => setIsEditing(true)}>
+              <button 
+                className="p-2 rounded-lg text-text-muted hover:text-accent-primary hover:bg-accent-primary/10 transition-all opacity-0 group-hover:opacity-100"
+                onClick={() => setIsEditing(true)}
+              >
                 <Edit3 size={18} />
               </button>
               <button
-                className="icon-btn delete"
+                className="p-2 rounded-lg text-text-muted hover:text-rose-400 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100"
                 onClick={() => deleteTask(task.id)}
               >
                 <Trash2 size={18} />

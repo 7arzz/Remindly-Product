@@ -200,27 +200,34 @@ function App() {
 
   if (loading) {
     return (
-      <div className="loading-screen">
-        <div className="loader"></div>
+      <div className="fixed inset-0 flex items-center justify-center bg-bg-primary z-50">
+        <div className="w-12 h-12 border-4 border-bg-secondary border-t-accent-primary rounded-full animate-spin"></div>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="app login-view">
-        <header className="header glass-card">
-          <div className="logo-section">
-            <div className="bell-icon">
-              <ListTodo size={24} />
+      <div className="min-h-screen flex flex-col justify-center items-center p-6 bg-gradient-sea">
+        <header className="w-full max-w-md mb-8">
+          <div className="flex flex-col items-center gap-4">
+            <div className="bg-accent-primary p-4 rounded-2xl shadow-lg shadow-accent-primary/20">
+              <ListTodo size={40} className="text-bg-primary" />
             </div>
-            <h1>Remindly</h1>
+            <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-accent-primary tracking-tight">
+              Remindly
+            </h1>
           </div>
         </header>
-        <div className="glass-card welcome-card">
-          <h2>Welcome to Remindly</h2>
-          <p>Organize your tasks and summaries in a premium, <b>collaborative</b> Sea Space.</p>
-          <button className="primary login-btn" onClick={handleLogin}>
+        <div className="glass-card w-full max-w-md p-10 text-center flex flex-col gap-8">
+          <div>
+            <h2 className="text-2xl font-bold mb-3">Welcome to Remindly</h2>
+            <p className="text-text-secondary">Organize your tasks and summaries in a premium, <b className="text-accent-primary">collaborative</b> Sea Space.</p>
+          </div>
+          <button 
+            className="btn-primary w-full shadow-xl shadow-accent-primary/10" 
+            onClick={handleLogin}
+          >
             <LogIn size={20} />
             Sign in with Google
           </button>
@@ -230,30 +237,34 @@ function App() {
   }
 
   return (
-    <div className="app">
-      <header className="header glass-card">
-        <div className="logo-section">
-          <div className="bell-icon">
-            <ListTodo size={24} />
+    <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 py-8 flex flex-col gap-6 sm:gap-8 min-h-screen">
+      <header className="glass-card flex flex-col sm:flex-row justify-between items-start sm:items-center p-5 sm:p-6 gap-4">
+        <div className="flex items-center gap-4">
+          <div className="bg-accent-primary p-3 rounded-xl shadow-lg shadow-accent-primary/20 shrink-0">
+            <ListTodo size={24} className="text-bg-primary" />
           </div>
-          <div className="user-info-header">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <h1>Remindly</h1>
-              <span className="badge-public"><Globe size={12}/> Sea Space</span>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-accent-primary m-0 mb-0">
+                Remindly
+              </h1>
+              <span className="hidden xs:flex items-center gap-1.5 bg-accent-primary/10 text-accent-primary text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-bold border border-accent-primary/20 uppercase tracking-wider">
+                <Globe size={12}/> Sea Space
+              </span>
             </div>
-            <span className="user-email">{user.email}</span>
+            <span className="text-text-muted text-xs sm:text-sm font-medium">{user.email}</span>
           </div>
         </div>
-        <div style={{ display: "flex", gap: "8px" }}>
+        <div className="flex gap-3 w-full sm:w-auto justify-end">
           <button
-            className="icon-btn"
+            className="icon-btn bg-bg-secondary/50 hover:bg-bg-secondary border border-border-primary/50"
             onClick={() => setIsStatsOpen(true)}
             title="Statistics"
           >
             <BarChart3 size={20} />
           </button>
           <button
-            className="icon-btn logout-btn"
+            className="icon-btn bg-bg-secondary/50 hover:bg-red-500/10 hover:text-red-400 border border-border-primary/50"
             onClick={logout}
             title="Logout"
           >
@@ -262,28 +273,36 @@ function App() {
         </div>
       </header>
 
-      <nav className="tab-navigation">
+      <nav className="flex bg-bg-secondary/50 p-1.5 rounded-2xl border border-border-primary/30 gap-2">
         <button 
-          className={`tab-btn ${activeTab === "tasks" ? "active" : ""}`}
+          className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold transition-all duration-300 ${
+            activeTab === "tasks" 
+            ? "bg-bg-card text-accent-primary shadow-lg border border-border-primary" 
+            : "text-text-secondary hover:text-text-primary hover:bg-bg-secondary"
+          }`}
           onClick={() => setActiveTab("tasks")}
         >
           <CheckCircle2 size={18} />
-          Tasks
+          <span className="text-sm sm:text-base">Tasks</span>
         </button>
         <button 
-          className={`tab-btn ${activeTab === "summaries" ? "active" : ""}`}
+          className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold transition-all duration-300 ${
+            activeTab === "summaries" 
+            ? "bg-bg-card text-accent-primary shadow-lg border border-border-primary" 
+            : "text-text-secondary hover:text-text-primary hover:bg-bg-secondary"
+          }`}
           onClick={() => setActiveTab("summaries")}
         >
           <FileText size={18} />
-          Summaries
+          <span className="text-sm sm:text-base">Summaries</span>
         </button>
       </nav>
 
       {activeTab === "tasks" ? (
-        <div className="tab-content fadeIn">
+        <div className="flex flex-col gap-6 sm:gap-8 fadeIn">
           <ProgressBar tasks={tasks} />
 
-          <div className="glass-card">
+          <div className="glass-card overflow-hidden">
             <TaskInput addTask={addTask} />
           </div>
 
@@ -296,9 +315,13 @@ function App() {
             setSearchQuery={setSearchQuery}
           />
 
-          <div className="section-header">
-            <h2 className="section-title">Community Tasks</h2>
-            <button className="icon-btn delete" onClick={clearAll} title="Clear All">
+          <div className="flex justify-between items-center px-2">
+            <h2 className="text-xl sm:text-2xl font-bold text-text-primary tracking-tight">Community Tasks</h2>
+            <button 
+              className="icon-btn text-text-muted hover:text-red-400 hover:bg-red-500/10" 
+              onClick={clearAll} 
+              title="Clear All"
+            >
               <Trash2 size={20} />
             </button>
           </div>
@@ -315,7 +338,7 @@ function App() {
           />
         </div>
       ) : (
-        <div className="tab-content fadeIn">
+        <div className="fadeIn">
           <SummarySection currentUser={user} />
         </div>
       )}
