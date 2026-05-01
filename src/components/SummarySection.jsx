@@ -77,7 +77,15 @@ function SummarySection({ currentUser }) {
       resetForm();
     } catch (error) {
       console.error("Error saving summary:", error);
-      alert("Error saving summary. Make sure Firebase Storage is enabled.");
+      let errorMessage = "Error saving summary.";
+      if (error.code === 'storage/unauthorized') {
+        errorMessage = "Unauthorized: Check Firebase Storage rules.";
+      } else if (error.code === 'permission-denied') {
+        errorMessage = "Permission Denied: Check Firestore rules.";
+      } else {
+        errorMessage += " " + (error.message || "Unknown error.");
+      }
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }

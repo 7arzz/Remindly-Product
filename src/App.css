@@ -468,16 +468,17 @@ button.delete:hover {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 90%;
-  max-width: 500px;
+  width: 95%;
+  max-width: 550px;
   background: var(--bg-card);
   border: 1px solid var(--border-primary);
-  border-radius: 20px;
+  border-radius: 28px;
   padding: 32px;
   z-index: 1002;
   box-shadow: var(--shadow-lg);
-  max-height: 90vh;
+  max-height: 85vh;
   overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 .detail-header, .modal-header {
@@ -782,12 +783,32 @@ button.delete:hover {
   }
 
   .detail-modal {
-    padding: 20px;
-    width: 95%;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    transform: none;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 32px 32px 0 0;
+    padding: 24px 20px 40px;
+    max-height: 92vh;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+  }
+
+  .detail-modal::before {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 4px;
+    background: var(--border-primary);
+    border-radius: 2px;
+    margin: -8px auto 20px;
   }
 
   .detail-title {
-    font-size: 1.25rem;
+    font-size: 1.35rem;
   }
 
   .stats-grid {
