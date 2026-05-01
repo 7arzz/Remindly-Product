@@ -13,7 +13,7 @@ export const compressImage = (file) => {
         const canvas = document.createElement('canvas');
         let width = img.width;
         let height = img.height;
-        const MAX_SIZE = 1200;
+        const MAX_SIZE = 800; // Reduced from 1200 for faster uploads
         
         if (width > height) {
           if (width > MAX_SIZE) {
@@ -33,7 +33,7 @@ export const compressImage = (file) => {
         ctx.drawImage(img, 0, 0, width, height);
         canvas.toBlob((blob) => {
           resolve(new File([blob], file.name, { type: 'image/jpeg' }));
-        }, 'image/jpeg', 0.7);
+        }, 'image/jpeg', 0.6); // Quality reduced to 0.6 for better compression
       };
     };
   });

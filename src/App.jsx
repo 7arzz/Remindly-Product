@@ -84,7 +84,7 @@ function App() {
 
   // Add task
   const addTask = useCallback(async (text, time, priority, detail, imageFile) => {
-    if (!user) return;
+    if (!user) return false;
     
     let imageUrl = "";
     
@@ -125,9 +125,11 @@ function App() {
         origin: { y: 0.8 },
         colors: ["#64ffda", "#00bcd4", "#ffffff"],
       });
+      return true;
     } catch (error) {
       console.error("Error adding task: ", error);
       alert("Failed to add task. Please check your connection or Firebase Storage settings.");
+      return false;
     }
   }, [user]);
 
