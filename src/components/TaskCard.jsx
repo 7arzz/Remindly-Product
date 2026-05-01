@@ -94,17 +94,19 @@ function TaskCard({ task, deleteTask, toggleDone, updateTask, onClick }) {
             <span className="task-text">{task.text}</span>
             <div className="task-time">
               <Clock size={12} />
-              {new Date(task.time).toLocaleString([], {
-                month: "short",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+              <span style={{ whiteSpace: 'nowrap' }}>
+                {new Date(task.time).toLocaleString([], {
+                  month: "short",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
               <span className={`priority-badge priority-${task.priority}`}>
                 {task.priority}
               </span>
               {task.isAssignment && (
-                <span className="priority-badge" style={{ background: "rgba(99, 102, 241, 0.15)", color: "#818cf8", border: "1px solid rgba(99, 102, 241, 0.3)" }}>
+                <span className="priority-badge priority-assignment">
                   Assignment
                 </span>
               )}

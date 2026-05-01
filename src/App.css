@@ -149,7 +149,8 @@ button.delete:hover {
   color: var(--text-secondary);
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .priority-badge {
@@ -164,6 +165,7 @@ button.delete:hover {
 .priority-high { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
 .priority-medium { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
 .priority-low { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+.priority-assignment { background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); }
 
 .task-done {
   opacity: 0.5;
@@ -478,11 +480,19 @@ button.delete:hover {
   overflow-y: auto;
 }
 
-.detail-header {
+.detail-header, .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 24px;
+  gap: 16px;
+}
+
+.modal-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  flex: 1;
 }
 
 .detail-title {
@@ -509,14 +519,15 @@ button.delete:hover {
 .assignment-toggle {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   margin-top: 16px;
-  padding: 12px;
+  padding: 14px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s;
+  width: 100%;
 }
 
 .assignment-toggle:hover {
