@@ -1,4 +1,1 @@
-/* Styles migrated to Tailwind utility classes in components */
-.fadeIn {
-  animation: fadeIn 0.4s ease-out forwards;
-}
+/* App.css is now empty. All styles are in index.css */

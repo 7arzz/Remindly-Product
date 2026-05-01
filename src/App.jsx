@@ -25,7 +25,7 @@ import {
   getDocs,
   writeBatch
 } from "firebase/firestore";
-import "./App.css";
+// import "./App.css";
 
 function App() {
   const [user, setUser] = useState(null);
