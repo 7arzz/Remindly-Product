@@ -26,7 +26,7 @@ export const appConfig = {
   features: {
     enablePublicSpace: true,
     enableStats: true,
-    enableSummaries: true,
+    enableProjects: true,
     enableConfetti: true,
   },
 

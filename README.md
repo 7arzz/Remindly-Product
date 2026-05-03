@@ -9,7 +9,7 @@
 - 🔐 **Autentikasi Google**: Sistem login yang aman dan instan.
 - 🌍 **Shared Sea Space**: Tugas sinkron secara real-time untuk kolaborasi tim.
 - 📊 **Statistik & Progress**: Visualisasi data yang interaktif dan dinamis.
-- 📝 **Task & Summary**: Pemisahan tugas harian dan catatan panjang (ringkasan).
+- 📝 **Task & Project**: Pemisahan tugas harian dan manajemen proyek (catatan proyek).
 - 🎨 **Desain Premium**: Animasi halus, efek kaca, dan responsivitas penuh.
 
 ---

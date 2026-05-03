@@ -26,7 +26,7 @@ import StatsDrawer from "./components/StatsDrawer";
 import TaskInput from "./components/TaskInput";
 import TaskList from "./components/TaskList";
 import Detail from "./components/Detail";
-import SummarySection from "./components/SummarySection";
+import ProjectSection from "./components/ProjectSection";
 import { appConfig } from "./config/appConfig";
 import { auth, db, loginWithGoogle, logout } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
@@ -48,7 +48,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState([]);
-  const [activeTab, setActiveTab] = useState("tasks"); // "tasks" or "summaries"
+  const [activeTab, setActiveTab] = useState("tasks"); // "tasks" or "projects"
   const [filter, setFilter] = useState(
     () => localStorage.getItem(`${appConfig.storagePrefix}filter`) || "all",
   );
@@ -365,14 +365,14 @@ function App() {
         </button>
         <button
           className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold transition-all duration-300 ${
-            activeTab === "summaries"
+            activeTab === "projects"
               ? "bg-bg-card text-accent-primary shadow-lg border border-border-primary"
               : "text-text-secondary hover:text-text-primary hover:bg-bg-secondary"
           }`}
-          onClick={() => setActiveTab("summaries")}
+          onClick={() => setActiveTab("projects")}
         >
           <FileText size={18} />
-          <span className="text-sm sm:text-base">Summaries</span>
+          <span className="text-sm sm:text-base">Proyek</span>
         </button>
       </nav>
 
@@ -419,7 +419,7 @@ function App() {
         </div>
       ) : (
         <div className="fadeIn">
-          <SummarySection currentUser={user} />
+          <ProjectSection currentUser={user} />
         </div>
       )}
 
