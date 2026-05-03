@@ -1,3 +1,8 @@
+/**
+ * Remindly Premium Template
+ * Firebase Service Configuration
+ */
+
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
@@ -5,12 +10,12 @@ import { getMessaging, getToken, onMessage } from "firebase/messaging";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyADgLsiTYqfYbvnlt1BI2cQonBTguxlhDU",
-  authDomain: "remindly-579de.firebaseapp.com",
-  projectId: "remindly-579de",
-  storageBucket: "remindly-579de.firebasestorage.app",
-  messagingSenderId: "575184734169",
-  appId: "1:575184734169:web:6c8fbd257a6a686e263bc8"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyADgLsiTYqfYbvnlt1BI2cQonBTguxlhDU",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "remindly-579de.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "remindly-579de",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "remindly-579de.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "575184734169",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:575184734169:web:6c8fbd257a6a686e263bc8"
 };
 
 // Initialize Firebase
